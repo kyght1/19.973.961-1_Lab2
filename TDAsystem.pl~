@@ -1,0 +1,49 @@
+%Aca defino el TDA system, que luego usaré en el main principal de
+% funciones
+
+%TDAsystem..., su representación se hara mediante uso de listas
+
+%capaConstructora
+%Predicado que construye un sistema de archivos
+%DOM--> name (string) X system (S)
+%Meta--> construir un sistema inicial con el el nombre del sistema
+/*La lista resultante posee la siguente estructura
+[nombre-sistema (name), lista usuarios, lista unidades, fecha, lista papelera]*/
+system(Name,[Name, [],[],[26,05,2023],[]]).
+
+%capa pertenencia-- recibe un sistema
+
+/* ----------------------------------------------Capa selectora-----------------------------------------*/
+% Todos con dominio System.. retorna algun
+% componente pedido
+%
+/*selector del nombre del sistema*/
+get_name_system([Name,_,_,_,_],Name).
+
+/*selector de los usuarios del sistema*/
+get_users_system([_,UsersList,_,_,_],UsersList).
+
+%selector de las unidades del sistema
+
+get_unidades_system([_,_,Unidades,_,_],Unidades).
+
+%Selector de la fecha del sistema
+get_creacion_system([_,_,_,Date,_],Date).
+
+%selector de la papelera del sistema
+
+get_trash_system([_,_,_,_,Papelera],Papelera).
+
+/*---------------------------------------------Capa modificadora----------------------------------------*/
+/*capa modificadora... todas reciben a system como argumento además de el nuevo valor pertenecient
+ a algun compontente*/
+% meta--> modificar la lista de usuarios del sistema (system), mediante
+% conjuncion de objetivos.
+
+mod_users_system(S, NewUsers,NewS):-
+    get_name_system(S,Name),
+    get_unidades_system(S,Unidades),
+    get_creacion_system(S,Date),
+    get_trash_system(S,Papelera),
+
+    NewS = [Name,NewUsers,Unidades,Date,Papelera].

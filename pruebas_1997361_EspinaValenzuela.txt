@@ -1,0 +1,59 @@
+/*script de pruebas*/
+
+/*constructor System*/
+system("Sistema1",S1).
+system("Sistema2",S2).
+system("Sistema3",S1).
+
+/*add-drive*/
+
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2). %crea unidad C
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemAddDrive(S2,"D","SegundaUnidad",1000,S3). %crea unidad C y D arrojando S3
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemAddDrive(S2,"D","SegundaUnidad",1000,S3). % S2 = S3, ya que unidad C ya existe.
+
+/*register*/
+
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3). %crea usuario "Nicolas"
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4). %crea a "Nicolas" y "Debora", arrojando S4.
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4). % S3=S4, "Nicolas" ya existe
+
+/*Login*/
+
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4),systemLogin(S4,"Nicolas",S5). %loguea a "Nicolas"
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Debora",S5). %loguea a "Debora"
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Pepe",S5). %falso, no existe "Pepe"
+
+/*logout*/
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Debora",S5),systemLogout(S5,S6). %deslogguea a "Debora"
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogout(S4,S5). %sin cambios, no hay user logueado
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Nicolas",S5),systemLogout(S5,S6). %desloguea a "Nicolas"
+
+/*switchDrive*/
+ system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Debora",S5),systemSwitchDrive(S5,"C",S6). %cambio a unidad "C"
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Debora",S5),systemAddDrive(S5,"D","SegundaUnidad",1111,S6),systemSwitchDrive(S6,"D",S7). %me cambio a unidad D
+system("Sistema1",S1),systemAddDrive(S1,"C","PrimeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Debora",S4),systemLogin(S4,"Debora",S5),systemAddDrive(S5,"D","SegundaUnidad",1111,S6),systemSwitchDrive(S6,"F",S7). %sin cambios, no existe Unidad F
+
+/*system mkdir*/
+
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"folder3",S9).
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"folder3",S9),systemMkdir(S9,"carpeta4",S10).
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"subcarpeta",S9).
+
+
+/*system cd*/
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"folder3",S9),systemCd(S9,"folder3",S10).
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"folder3",S9),systemCd(S9,"Folder2",S10). %ingreso a subcarpeta
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),systemAddDrive(S5,"D","SegundaUnidad",4000,S6),systemSwitchDrive(S6,"c",S7),systemMkdir(S7,"Folder2",S8),systemMkdir(S8,"folder3",S9),systemCd(S9,"Folder23",S10). % falso, no existe "Folder23"
+
+/*add_file*/
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(4,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6).
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(1,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6),archivo(1,"archivo1","jpg","ahora soy una imagen",[],[],1,B),systemAddFile(S6,B,S7).
+ system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(4,"archivo3","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6).
+
+/*systemDel*/
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(_,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6),archivo(1,"archivo1","jpg","ahora soy una imagen",[],[],1,B),systemAddFile(S6,B,S7),systemDel(S7,"archivo1.jpg",S8).
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(_,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6),archivo(1,"archivo1","jpg","ahora soy una imagen",[],[],1,B),systemAddFile(S6,B,S7),systemDel(S7,"*",S8). %borra todos los archivos
+system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(_,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6),archivo(1,"archivo1","jpg","ahora soy una imagen",[],[],1,B),systemAddFile(S6,B,S7),systemDel(S7,"*.*",S8).
+
+/*systemCopy*/
+/*system("Alme",S),systemAddDrive(S,"c","primeraUnidad",1000,S2),systemRegister(S2,"Nicolas",S3),systemRegister(S3,"Nicolas",S4), systemLogin(S4,"Nicolas",S5),archivo(_,"archivo1","txt","asasd",[],[],1,A),systemAddFile(S5,A,S6),archivo(1,"archivo1","jpg","ahora soy una imagen",[],[],1,B),systemAddFile(S6,B,S7),systemCd(S7,"/",S8),systemMkdir(S8,"Folder1",S9),systemCd(S9,"Folder1",S10),systemMkdir(S10,"Folder11",S11),systemAddFile(S11,B,S12),systemCd(S12,"/",S13),systemCopy(S13,"Folder1","c:/Folder1/Folder11/",S14).*/

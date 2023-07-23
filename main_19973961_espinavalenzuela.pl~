@@ -1,0 +1,17 @@
+:-use_module(tdaunidad_19973961_EspinaValenzuela).
+:-use_module(tdausuario_19973961_EspinaValenzuela).
+:-use_module(tdaarchivo_19973961_EspinaValenzuela).
+:-use_module(tdasystem_19973961_EspinaValenzuela).
+
+/*Aca, en main, iran los requerimientos funcionales pedidos*/
+
+/*Comienzo a definir los predicados*/
+
+/*TDA_system addrive --> prdicado que permite anadir una unidad a un sistema... la letra de la unidad ha de ser unica*/
+/*DOM --> system x letter x name x capacity x System (meta, unificar un nuevo system con la nueva unidad agregada)*/
+
+/*predicado auxiliar*/
+/*DOm--> Lista Unidades, letter*/
+buscarElementoEnLista([X|_],X):-!.
+buscarElementoEnLista([_|R],Letter):-
+    buscarElementoEnLista(R,Letter).

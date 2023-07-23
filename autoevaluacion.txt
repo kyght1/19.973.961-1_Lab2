@@ -1,0 +1,20 @@
+TDA system-constructor : 1
+addDrive: 1
+register: 1
+login: 1
+logout: 1
+switch-drive: 1
+mkdir : 1
+cd : 1
+add-file: 1
+del : 1
+copy: 0
+move: 0
+ren: 0
+dir: 0
+format: 0
+ecryt: 0
+dercrypt :0
+grep : 0
+view-trash: 0
+restore : 0
