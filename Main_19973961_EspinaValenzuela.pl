@@ -1295,7 +1295,7 @@ get_data_unidad(UnidadActual,DataUnidadActual),
 get_letter_unidad(UnidadActual,LetterUnidadActual),
 
 get_hijos_ruta(RutaActual,HijosRutaActual),
-member(HijosRutaActual,Nombre),
+ member(HijosRutaActual,Nombre),
 
 /*consigo el targetPath*/
 getTargetPath(RoutesList,TargetPath,RouteWithTargetPath),
@@ -1303,6 +1303,7 @@ get_IDelement_ruta(RouteWithTargetPath,IDRouteWithTargetPath),
 get_hijos_ruta(RouteWithTargetPath,HijosRutaTargetPath),
 get_nameElement_ruta(RouteWithTargetPath,NameRouteTargetPath),
 get_IDpadre_ruta(RouteWithTargetPath,IDPadreRouteWithTargetPath),
+\+member(HijosRutaTargetPath,Nombre),
 /*Busco el archivo a mover */
 filterEspecificArchive(DataUnidadActual,IDRutaActual,Nombre,Formato,ArchivoAMover),
 filterEspecificArchiveRoute(RoutesList,IDRutaActual,Nombre,RutaArchivoAMover),
@@ -1329,7 +1330,7 @@ appendElementToFinal(RoutesWithoutArchive,NewRutaArchivo,RutasFinales),
 
 /*ahora la data*/
     deleteArchive(ArchivoAMover,DataUnidadActual,DataWithoutArchive),
-    append(DataWithoutArchive,NewArchivoAMover,DataUnidadFinal),
+    appendElementToFinal(DataWithoutArchive,NewArchivoAMover,DataUnidadFinal),
     mod_data_unidad(UnidadActual,DataUnidadFinal,NewUnidadFinal),
     /*unity list*/
      borrarUnidad(Unidades,LetterUnidadActual,UnidadesWithoutActual),
@@ -1340,9 +1341,88 @@ get_routes_system(Saux,Routes),
 deleteElement(HijosRutaActual,Nombre,HijosRutaActualSinArchivo),
 mod_hijos_ruta(RutaActual,HijosRutaActualSinArchivo,NewRutaActual),
 borrarRuta(Routes,NameRutaActual,IDpadreRutaActual,RoutesFinals),
-appendElementToFinal(RoutesFinals,NewRutaActual,RoutesFinals2),
+appendElementToList(RoutesFinals,NewRutaActual,RoutesFinals2),
 mod_rutas_system(Saux,RoutesFinals2,Saux2),
 mod_unidades_system(Saux2,UnidadesFinales,NewSystem),!.
 
 
+/*Caso 2.. cuando existe un archivo como hijo en la ruta targetPath con el mismo nombre*/
+systemMove(System,Source,TargetPath,NewSystem):-
+split_string(Source,".","",[Nombre,Formato]),
+    split_string(Source,".","",P), %aca tengo el nombre del archivo separado de su formato
+    length(P,Length), Length > 1,
 
+get_routes_system(System,RoutesList),
+get_unidades_system(System,Unidades),
+
+/*ruta actual*/
+obtenerRutaActual(RoutesList,RutaActual),
+get_IDelement_ruta(RutaActual,IDRutaActual),
+get_nameElement_ruta(RutaActual,NameRutaActual),
+get_IDpadre_ruta(RutaActual,IDpadreRutaActual),
+
+/*Unidad Actual*/
+obtenerUnidadActual(Unidades,UnidadActual),
+get_data_unidad(UnidadActual,DataUnidadActual),
+get_letter_unidad(UnidadActual,LetterUnidadActual),
+
+get_hijos_ruta(RutaActual,HijosRutaActual),
+member(HijosRutaActual,Nombre),
+
+/*consigo el targetPath*/
+getTargetPath(RoutesList,TargetPath,RouteWithTargetPath),
+get_IDelement_ruta(RouteWithTargetPath,IDRouteWithTargetPath),
+get_hijos_ruta(RouteWithTargetPath,HijosRutaTargetPath),
+member(HijosRutaTargetPath,Nombre),%si existe el archivo lo reemplazo
+/*necesito la informacion del archivo ubicado en el targetPath*/
+filterEspecificArchive(DataUnidadActual,IDRouteWithTargetPath,Nombre,_,ArchivoEnDestino),
+
+
+/*Borro el archivo existente apra pode reemplazarlo*/
+borrarRuta(RoutesList,Nombre,IDRouteWithTargetPath,RoutesWithoutArchiveDestiny),
+deleteArchive(ArchivoEnDestino,DataUnidadActual,DataUnidadActual1),
+
+
+
+
+/**/
+get_nameElement_ruta(RouteWithTargetPath,NameRouteTargetPath),
+get_IDpadre_ruta(RouteWithTargetPath,IDPadreRouteWithTargetPath),
+/*Busco el archivo a mover */
+filterEspecificArchive(DataUnidadActual1,IDRutaActual,Nombre,Formato,ArchivoAMover),
+filterEspecificArchiveRoute(RoutesWithoutArchiveDestiny,IDRutaActual,Nombre,RutaArchivoAMover),
+
+/*Modifico las dependencias y el stringForm*/
+mod_idpadre_archivo(ArchivoAMover,IDRouteWithTargetPath,NewArchivoAMover),
+mod_idpadre_ruta(RutaArchivoAMover,IDRouteWithTargetPath,NewRutaArchivoAMover),
+
+/*modifico el string*/
+   string_concat(Nombre,".",NameArchivoAux),
+    string_concat(NameArchivoAux,Formato,StringForm2),
+    string_concat(TargetPath,StringForm2,StringFormRuta),
+mod_stringForm_ruta(NewRutaArchivoAMover,StringFormRuta,NewRutaArchivo),
+
+/*lo agrego como hijo al target path*/
+
+/*mod todo*/
+borrarRuta(RoutesWithoutArchiveDestiny,NameRouteTargetPath,IDPadreRouteWithTargetPath,RoutesWithoutTargetPath),
+appendElementToFinal(RoutesWithoutTargetPath,RouteWithTargetPath,RoutesAux1),
+borrarRuta(RoutesAux1,Nombre,IDRutaActual,RoutesWithoutArchive),
+appendElementToFinal(RoutesWithoutArchive,NewRutaArchivo,RutasFinales),
+
+/*ahora la data*/
+    deleteArchive(ArchivoAMover,DataUnidadActual1,DataWithoutArchive),
+    appendElementToFinal(DataWithoutArchive,NewArchivoAMover,DataUnidadFinal),
+    mod_data_unidad(UnidadActual,DataUnidadFinal,NewUnidadFinal),
+    /*unity list*/
+     borrarUnidad(Unidades,LetterUnidadActual,UnidadesWithoutActual),
+     appendElementToList(UnidadesWithoutActual,NewUnidadFinal,UnidadesFinales),
+/*Modifico todo*/
+mod_rutas_system(System,RutasFinales,Saux),
+get_routes_system(Saux,Routes),
+deleteElement(HijosRutaActual,Nombre,HijosRutaActualSinArchivo),
+mod_hijos_ruta(RutaActual,HijosRutaActualSinArchivo,NewRutaActual),
+borrarRuta(Routes,NameRutaActual,IDpadreRutaActual,RoutesFinals),
+appendElementToList(RoutesFinals,NewRutaActual,RoutesFinals2),
+mod_rutas_system(Saux,RoutesFinals2,Saux2),
+mod_unidades_system(Saux2,UnidadesFinales,NewSystem),!.
