@@ -239,7 +239,7 @@ anade datos relativos a usuario creador, fecha de creacion, fecha de ultima modi
 /*defino un pequeno predicado para determinar si a existe un directorio con el mismo nombre en la ruta actual*/
 existeDirectorio([X|_],X):-!.
 existeDirectorio([_|R],D):-
-    existeDirectorio(R,D). %la lista y D son una lista de strings hijos y un string de nonmbre de directorio
+    existeDirectorio(R,D),!. %la lista y D son una lista de strings hijos y un string de nonmbre de directorio
 
 
 
@@ -251,7 +251,7 @@ systemMkdir(System,Name,System):-
     obtenerRutaActual(Rutas,RutaActual),  
     get_hijos_ruta(RutaActual,HijosRutaActual),
     
-    existeDirectorio(HijosRutaActual,Name).
+    existeDirectorio(HijosRutaActual,Name),!.
     
 %caso cuando no existe el directorio en la unidad actual
 
@@ -315,14 +315,14 @@ getSelectRoute([X|_],IDpadre,Path,E):-
     get_nameElement_ruta(X,Name), Name == Path,
     E = X, !.
 getSelectRoute([_|R],IDpadre,Path,E):-
-    getSelectRoute(R,IDpadre,Path,E).
+    getSelectRoute(R,IDpadre,Path,E),!.
 /*predicado similar al anterior que recibe solo id padre... para buscar la ruta*/
 
 getPadreRoute([X|_],IDpadre,E):-
     get_IDelement_ruta(X,ID), IDpadre == ID,
     E = X, !.
 getPadreRoute([_|R],IDpadre,E):-
-    getPadreRoute(R,IDpadre,E).
+    getPadreRoute(R,IDpadre,E),!.
 
 
 
@@ -606,7 +606,7 @@ systemAddFile(System,File1,NewSystem):-
     string_concat(StringForm1,StringForm2,StringFormFinal),
 
 
-    ruta(NewID,NameArchivo,IDpadre,StringFormFinal,-1,RutaArchivo), %los hijos lllevan un -1, asi se que es archivo y no directorio
+    ruta(NewID,NameArchivo,IDpadre,-1,StringFormFinal,RutaArchivo), %los hijos lllevan un -1, asi se que es archivo y no directorio
     appendElementToFinal(RoutesAux,RutaArchivo,NewRoutesList),
     %data
     archivo(NewID,NameArchivo,FormatArchivo,ContentArchivo,Fecha,[],IDpadre,Archivo),
@@ -682,9 +682,9 @@ filterRoutes([_|R],Path,IDPadre, F) :-
 
 filterArchivesRoutes([],_,_,[]):-!.
 filterArchivesRoutes([X|R],IDFather,SonsList,[X|F]):-
-  get_IDpadre_ruta(X,IDroute),IDroute == IDFather, get_hijos_ruta(X,H), H== -1, filterRoutes(R,IDFather,SonsList,F),!.
+  get_IDpadre_ruta(X,IDroute),IDroute == IDFather, get_hijos_ruta(X,H), H == -1, filterRoutes(R,IDFather,SonsList,F).
 filterArchivesRoutes([_|R],IDFather,SonsList,F):-
-    filterArchivesRoutes(R,IDFather,SonsList,F),!.
+    filterArchivesRoutes(R,IDFather,SonsList,F).
 
 
 /*Eliminar rutas de archivos de la lista de rutas*/
@@ -700,12 +700,11 @@ deleteArchive(X, [X|R], NewRoutes) :-
 deleteArchive(X, [Y|R], [Y|NewRoutes]) :-
     X \= Y,
     deleteArchive(X, R, NewRoutes),!.
-
 /*obtengo la data de los archivos a borrar con el siguiente predicado*/
 filterArchivesData([],_,[]):-!.
 filterArchivesData([X|R],IDFather,[X|F]):-
-    get_id_padreArchivo(X,IDarch), IDFather == IDarch, filterArchivesData(R,IDFather,F),!.
-filterArchivesData([_|R],IDFather,F):- filterArchivesData(R,IDFather,F),!.    
+    get_id_padreArchivo(X,IDarch), get_format_archivo(X,Format), string(Format),IDFather == IDarch, filterArchivesData(R,IDFather,F),!.
+filterArchivesData([_|R],IDFather,F):- filterArchivesData(R,IDFather,F).    
 
 /*ahora reglas similares a la anterior para el borrado de archivos de la data*/
 
@@ -843,7 +842,7 @@ systemDel(System,FileNamePattern,NewSystem):-
 
 
    /*obtengo los hijos y borro los hijos*/
-   maplist(get_nameElement_ruta,ArchivosFiltradosRoutes,NamesArchivos),
+   maplist(get_name_archivo,ArchivosFiltradosData,NamesArchivos),
    deleteElementsListToList(HijosRutaActual,NamesArchivos,HijosSinArchivos),
 
 
@@ -1270,5 +1269,80 @@ systemCopy(System,Source,TargetPath,NewSystem):-
 
 
 
-    
+/* move .. */
+/*Caso 1.. mover un archivo cuando no existe*/
+
+systemMove(System,Source,TargetPath,NewSystem):-
+/*Para el movimiento de un archivo basta hacer lo siguiente*/
+/*buscar la ruta del archivo a mover
+  modificar su ruta cambiandolo por el targetpat=nombrearchivo.formato  */
+split_string(Source,".","",[Nombre,Formato]),
+    split_string(Source,".","",P), %aca tengo el nombre del archivo separado de su formato
+    length(P,Length), Length > 1,
+
+get_routes_system(System,RoutesList),
+get_unidades_system(System,Unidades),
+
+/*ruta actual*/
+obtenerRutaActual(RoutesList,RutaActual),
+get_IDelement_ruta(RutaActual,IDRutaActual),
+get_nameElement_ruta(RutaActual,NameRutaActual),
+get_IDpadre_ruta(RutaActual,IDpadreRutaActual),
+
+/*Unidad Actual*/
+obtenerUnidadActual(Unidades,UnidadActual),
+get_data_unidad(UnidadActual,DataUnidadActual),
+get_letter_unidad(UnidadActual,LetterUnidadActual),
+
+get_hijos_ruta(RutaActual,HijosRutaActual),
+member(HijosRutaActual,Nombre),
+
+/*consigo el targetPath*/
+getTargetPath(RoutesList,TargetPath,RouteWithTargetPath),
+get_IDelement_ruta(RouteWithTargetPath,IDRouteWithTargetPath),
+get_hijos_ruta(RouteWithTargetPath,HijosRutaTargetPath),
+get_nameElement_ruta(RouteWithTargetPath,NameRouteTargetPath),
+get_IDpadre_ruta(RouteWithTargetPath,IDPadreRouteWithTargetPath),
+/*Busco el archivo a mover */
+filterEspecificArchive(DataUnidadActual,IDRutaActual,Nombre,Formato,ArchivoAMover),
+filterEspecificArchiveRoute(RoutesList,IDRutaActual,Nombre,RutaArchivoAMover),
+
+/*Modifico las dependencias y el stringForm*/
+mod_idpadre_archivo(ArchivoAMover,IDRouteWithTargetPath,NewArchivoAMover),
+mod_idpadre_ruta(RutaArchivoAMover,IDRouteWithTargetPath,NewRutaArchivoAMover),
+
+/*modifico el string*/
+   string_concat(Nombre,".",NameArchivoAux),
+    string_concat(NameArchivoAux,Formato,StringForm2),
+    string_concat(TargetPath,StringForm2,StringFormRuta),
+mod_stringForm_ruta(NewRutaArchivoAMover,StringFormRuta,NewRutaArchivo),
+
+/*lo agrego como hijo al target path*/
+appendElementToFinal(HijosRutaTargetPath,Nombre,NewHijosTargetPath),
+mod_hijos_ruta(RouteWithTargetPath,NewHijosTargetPath,NewRouteWithTargetPath),
+
+/*mod todo*/
+borrarRuta(RoutesList,NameRouteTargetPath,IDPadreRouteWithTargetPath,RoutesWithoutTargetPath),
+appendElementToFinal(RoutesWithoutTargetPath,NewRouteWithTargetPath,RoutesAux1),
+borrarRuta(RoutesAux1,Nombre,IDRutaActual,RoutesWithoutArchive),
+appendElementToFinal(RoutesWithoutArchive,NewRutaArchivo,RutasFinales),
+
+/*ahora la data*/
+    deleteArchive(ArchivoAMover,DataUnidadActual,DataWithoutArchive),
+    append(DataWithoutArchive,NewArchivoAMover,DataUnidadFinal),
+    mod_data_unidad(UnidadActual,DataUnidadFinal,NewUnidadFinal),
+    /*unity list*/
+     borrarUnidad(Unidades,LetterUnidadActual,UnidadesWithoutActual),
+     appendElementToList(UnidadesWithoutActual,NewUnidadFinal,UnidadesFinales),
+/*Modifico todo*/
+mod_rutas_system(System,RutasFinales,Saux),
+get_routes_system(Saux,Routes),
+deleteElement(HijosRutaActual,Nombre,HijosRutaActualSinArchivo),
+mod_hijos_ruta(RutaActual,HijosRutaActualSinArchivo,NewRutaActual),
+borrarRuta(Routes,NameRutaActual,IDpadreRutaActual,RoutesFinals),
+appendElementToFinal(RoutesFinals,NewRutaActual,RoutesFinals2),
+mod_rutas_system(Saux,RoutesFinals2,Saux2),
+mod_unidades_system(Saux2,UnidadesFinales,NewSystem),!.
+
+
 
