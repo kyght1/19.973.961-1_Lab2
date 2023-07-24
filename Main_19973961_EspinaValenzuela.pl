@@ -1489,7 +1489,7 @@ enla id padre de la ruta source y a las demas modificar sus rutas,*/
 /*Busco primero la ruta del Source*/
 searchSource(AparitionsFolder,Source,IDRutaActual,RouteOfSource),
 /*id de la ruta que contiene a source*/
-get_IDelement_ruta(RouteOfSource,IDRouteOfSource),
+
 get_IDpadre_ruta(RouteOfSource,IDpadreRouteOfSource),
 /*Modifico el padre de estaruta anadiendo el id del targetPath*/
 mod_idpadre_ruta(RouteOfSource,IDRouteWithTargetPath,NewRouteSourceWithIDTargetPath),

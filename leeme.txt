@@ -1,0 +1,9 @@
+Entrega correspondiente al comodin del laboratorio 2 Prolog.
+Tuve un problema con mi computadora donde habia hecho el lab con anterioridad, tuve que conseguir uno prestado
+para poder terminar el laboratorio.
+a causa de ello (y en mi desconocimiento), use el comando force de git, y perdi mis commits anteriores.
+no supe como recuperarlos, aun asi, el item fue evaluado correctamente(en caso de).
+debo destacar que en esta ocasion, al igual que en JAVA, implemente un correlativo global anadiendolo al TDAsystem
+como otro componenente mas de este TDA.
+asi, logre implementar la funcionalidad "copy" y "move" con el fin de alcanzar la nota minima requerida para aprobar la asignatura.
+
