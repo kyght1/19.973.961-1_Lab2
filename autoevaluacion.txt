@@ -8,8 +8,8 @@ mkdir : 1
 cd : 1
 add-file: 1
 del : 1
-copy: 0
-move: 0
+copy: 1
+move: 1
 ren: 0
 dir: 0
 format: 0

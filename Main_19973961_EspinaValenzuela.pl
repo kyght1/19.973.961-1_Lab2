@@ -349,6 +349,8 @@ systemCd(System, "/", NewSystem):- %Path o nombre de carpeta.... separare los co
 
 systemCd(System,Path,NewSystem):-
     %existe en la ruta actual
+    split_string(Path,"/","",P),
+    length(P,L), L ==1,
     get_users_system(System,UsersList),
     existUserLogged(UsersList),
 
@@ -701,7 +703,7 @@ deleteArchive(X, [Y|R], [Y|NewRoutes]) :-
     X \= Y,
     deleteArchive(X, R, NewRoutes),!.
 /*obtengo la data de los archivos a borrar con el siguiente predicado*/
-filterArchivesData([],_,[]):-!.
+filterArchivesData([],_,[]).
 filterArchivesData([X|R],IDFather,[X|F]):-
     get_id_padreArchivo(X,IDarch), get_format_archivo(X,Format), string(Format),IDFather == IDarch, filterArchivesData(R,IDFather,F),!.
 filterArchivesData([_|R],IDFather,F):- filterArchivesData(R,IDFather,F).    
@@ -711,7 +713,7 @@ filterArchivesData([_|R],IDFather,F):- filterArchivesData(R,IDFather,F).
 
 deleteElementsListToList([], Data, Data):-!.
 deleteElementsListToList([X|R], Data, NewData) :-
-    deleteArchive(X, Data, DataAux),!,
+    deleteArchive(X, Data, DataAux),
     deleteElementsListToList(R, DataAux, NewData),!.
 
 /*ahora el caso de que FileNamePatter sea un archivo con nombre determinado...*/
@@ -1222,7 +1224,6 @@ systemCopy(System,Source,TargetPath,NewSystem):-
 
     /*a cada ruta le mapeo los nuevos ids*/
     aplicar_nuevosIDs(IDsNuevos,DataToCopy,NewDataWihtNewID),
-    /*largo data a copiar*/
     obtainInfoElements(NewDataWihtNewID,DataToCopy,InfoElements),
  
     modIDpadreDataToCopy(NewDataWihtNewID,InfoElements,InfoElements,NewDataAux),
@@ -1271,6 +1272,23 @@ systemCopy(System,Source,TargetPath,NewSystem):-
 
 /* move .. */
 /*Caso 1.. mover un archivo cuando no existe*/
+/*Defino una regla auxiliar para poder encontrar la ruta del source dado un Source y un iD padre*/
+searchSource([],_,_,[]):-!.
+searchSource([R|_],Source,IDpadreSource,R):-
+    get_nameElement_ruta(R,Name),
+    get_IDpadre_ruta(R,ID),
+    Source == Name, ID == IDpadreSource,!.
+searchSource([_|R1],Source,IDpadreSource,R):-
+    searchSource(R1,Source,IDpadreSource,R),!.
+    /*Lo mismo para directorio y data*/
+
+searchSourceD([R|_],Source,IDpadreSource,R):-
+    get_name_directorio(R,Name),
+    get_idPadre_directorio(R,ID),
+    Source == Name, ID == IDpadreSource,!.
+searchSourceD([_|R1],Source,IDpadreSource,R):-
+    searchSourceD(R1,Source,IDpadreSource,R),!.
+
 
 systemMove(System,Source,TargetPath,NewSystem):-
 /*Para el movimiento de un archivo basta hacer lo siguiente*/
@@ -1426,3 +1444,98 @@ borrarRuta(Routes,NameRutaActual,IDpadreRutaActual,RoutesFinals),
 appendElementToList(RoutesFinals,NewRutaActual,RoutesFinals2),
 mod_rutas_system(Saux,RoutesFinals2,Saux2),
 mod_unidades_system(Saux2,UnidadesFinales,NewSystem),!.
+
+
+
+
+/*Ahora el caso en el que se deba move run directorio completo*/
+/*Aqui necesito mover todo slo arcivos del directorio.. haciendo algo similar a la regla copy en
+cuanto al manejo de rutas*/
+systemMove(System,Source,TargetPath,NewSystem):-
+    /*Obtengo toda la info del sistema primero*/
+    split_string(Source,".","",P), %aca tengo el nombre del archivo separado de su formato
+    length(P,Length), Length == 1, %entonces es un directorio
+
+get_routes_system(System,RoutesList),
+get_unidades_system(System,Unidades),
+
+/*ruta actual*/
+obtenerRutaActual(RoutesList,RutaActual),
+get_IDelement_ruta(RutaActual,IDRutaActual),
+get_nameElement_ruta(RutaActual,NameRutaActual),
+get_IDpadre_ruta(RutaActual,IDpadreRutaActual),
+
+/*Unidad Actual*/
+obtenerUnidadActual(Unidades,UnidadActual),
+get_data_unidad(UnidadActual,DataUnidadActual),
+get_letter_unidad(UnidadActual,LetterUnidadActual),
+
+get_hijos_ruta(RutaActual,HijosRutaActual),
+ member(HijosRutaActual,Nombre),
+
+/*consigo el targetPath*/
+getTargetPath(RoutesList,TargetPath,RouteWithTargetPath),
+get_IDelement_ruta(RouteWithTargetPath,IDRouteWithTargetPath),
+get_hijos_ruta(RouteWithTargetPath,HijosRutaTargetPath),
+get_nameElement_ruta(RouteWithTargetPath,NameRouteTargetPath),
+get_IDpadre_ruta(RouteWithTargetPath,IDPadreRouteWithTargetPath),
+\+member(HijosRutaTargetPath,Nombre),
+
+/*Obtengo als apariciones del directorio*/
+filterRoutes(RoutesList,Source,IDpadreRutaActual,AparitionsFolder),
+/*teniendo las apariciones deb actuar sobre ellas, realizando un cambio
+enla id padre de la ruta source y a las demas modificar sus rutas,*/
+
+/*Busco primero la ruta del Source*/
+searchSource(AparitionsFolder,Source,IDRutaActual,RouteOfSource),
+/*id de la ruta que contiene a source*/
+get_IDelement_ruta(RouteOfSource,IDRouteOfSource),
+get_IDpadre_ruta(RouteOfSource,IDpadreRouteOfSource),
+/*Modifico el padre de estaruta anadiendo el id del targetPath*/
+mod_idpadre_ruta(RouteOfSource,IDRouteWithTargetPath,NewRouteSourceWithIDTargetPath),
+/*borro la ruta source y agrego la nueva... asi, agrego la nueva dependencia 
+y le modifico los Stringform*/
+borrarRuta(AparitionsFolder,Source,IDpadreRouteOfSource,AparitionsFolderWithoutSource),
+/*Agrego la ruta seteada*/
+appendElementToFinal(AparitionsFolderWithoutSource,NewRouteSourceWithIDTargetPath,AparitionsFolderWithNewSource),
+/*Modifico los stringforms de las rutas deonde aparece source.. asi represento el movimiento de la data
+similar a lo que ocurre e copy*/
+actualizarStrings(AparitionsFolderWithNewSource,TargetPath,Source,AparitionsFolderWithNewRoutes),
+
+/*ahora acualizo la lista orriginal eliminando las apariciones de Source.. todos los elementos que la contengan
+de la lsita de rutas principal similar a la regla copy mezclada con del*/
+deleteElementsListToList(AparitionsFolder,RoutesList,RoutesWithoutAparitions),
+/*agrego als nuevas rutas modificadas a la ultima lista*/
+appendElementToFinal(RoutesWithoutAparitions,AparitionsFolderWithNewRoutes,FinalRoutesForSystem),
+/*Modifico al sistema*/
+mod_rutas_system(System,FinalRoutesForSystem,SystemAux),
+
+/*ahora debo buscar el data que representa al source y modificar su idpadre con el del targetPath*/
+searchSourceD(DataUnidadActual,Source,IDRutaActual,DataOfSource),
+mod_idpadre_directorio(DataOfSource,IDRouteWithTargetPath,NewDataOfSourceWithNewIDpadre),
+deleteArchive(DataOfSource,DataUnidadActual,NewDatUnidadActualWithoutSource),
+appendElementToFinal(NewDatUnidadActualWithoutSource,NewDataOfSourceWithNewIDpadre,FinalDataUnidad),
+/*Modifico el data de la unidad usando el modificador*/
+mod_data_unidad(UnidadActual,FinalDataUnidad,NewUnidadActual),
+borrarUnidad(Unidades,LetterUnidadActual,UnidadesWithoutActual),
+appendElementToList(UnidadesWithoutActual,NewUnidadActual,NewUnidades),
+/*Modifico las unidades del sistema*/
+mod_unidades_system(SystemAux,NewUnidades,SystemAux2),
+
+/**/
+get_routes_system(SystemAux2,RutasSystemAux2),
+/*ahora modifico los hijos de la ruta destino y actual.. borrando en actual y anadiendo en el destino el source*/
+deleteElement(HijosRutaActual,Source,HijosRutaActualSinArchivo),
+mod_hijos_ruta(RutaActual,HijosRutaActualSinArchivo,NewRutaActual),
+
+borrarRuta(RutasSystemAux2,NameRutaActual,IDpadreRutaActual,RoutesFinals),
+appendElementToList(RoutesFinals,NewRutaActual,RoutesFinals2),
+
+appendElementToFinal(HijosRutaTargetPath,Source,NewHijosTargetPath),
+mod_hijos_ruta(RouteWithTargetPath,NewHijosTargetPath,NewRouteWithTargetPath),
+borrarRuta(RoutesFinals2,NameRouteTargetPath,IDPadreRouteWithTargetPath,RoutesWithoutTargetPath),
+appendElementToFinal(RoutesWithoutTargetPath,NewRouteWithTargetPath,RoutesAux1),
+mod_rutas_system(SystemAux2,RoutesAux1,NewSystem).
+
+
+
